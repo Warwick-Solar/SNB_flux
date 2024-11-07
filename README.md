@@ -1,2 +1,2 @@
 # SNB_flux
-Python script for calculating heat flux given by SNB model
+Python script and Jupyter notebook for calculating heat flux given by SNB model
