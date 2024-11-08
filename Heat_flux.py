@@ -156,8 +156,8 @@ ax.plot(x, Q_lim_l, label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$", linestyle='
 x_p = x[np.abs((Q_SNB - Q_SH_B)/Q_SH_B)< 1e-2]
 x_l = x_p[0]
 x_r = x_p[-1]
-ax.fill_between(x[x<x_l], Q_SH_B[x<x_l], Q_SNB[x<x_l], alpha=0.4, color='orange')
-ax.fill_between(x[x>x_r], Q_SH_B[x>x_r], Q_SNB[x>x_r], alpha=0.4, color='orange')
+ax.fill_between(x[x<x_l], Q_SH_B[x<x_l], Q_SNB[x<x_l], alpha=0.8, color='orange')
+ax.fill_between(x[x>x_r], Q_SH_B[x>x_r], Q_SNB[x>x_r], alpha=0.8, color='orange')
 
 ax.set_xlabel('x, Mm', fontsize=16)
 ax.set_ylabel(r'Heat flux, $W/m^{2}$', fontsize=16)
