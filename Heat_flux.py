@@ -1,9 +1,8 @@
+import warnings
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.constants import Boltzmann as kb, epsilon_0 as ep0
-from scipy.constants import elementary_charge as qe, electron_mass as me
-from scipy.linalg import solve_banded
-import warnings
+from scipy.constants import Boltzmann as kb
+from scipy.constants import electron_mass as me
 warnings.filterwarnings('ignore')
 
 
@@ -44,7 +43,6 @@ def snb(T0, n0):
     x_grid_c = 0.5 * (x_grid_b[1:] + x_grid_b[:-1])
 
     # Initial temperature profile
-    T0 = T0  # Kelvin
     T_max = T0 * 0.01
     T_scale = 5e6
     Te_c = T0 + T_max * np.exp(-(x_grid_c / T_scale)**2)
@@ -149,8 +147,8 @@ ax = axs[0]
 
 x, Q_SH_B, Q_SNB, Q_lim_l, Te, _ = snb(T0, n0)
 
-ax.plot(x, Q_SH_B, label=rf"SH", linestyle='solid', color='blue')
-ax.plot(x, Q_SNB, label=rf"SNB", linestyle='dashed', color='green')
+ax.plot(x, Q_SH_B, label=r"SH", linestyle='solid', color='blue')
+ax.plot(x, Q_SNB, label=r"SNB", linestyle='dashed', color='green')
 ax.plot(x, Q_lim_l, label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
         linestyle='dashed', color='red')
 
@@ -190,9 +188,9 @@ for T0 in Ts:
 
 # We measure heat flux in units of heat flux at minimal temperature
 scale = q_sh[0]
-ax.plot(Ts/1e6, np.array(q_sh)/scale, label=rf"SH", linestyle='solid',
+ax.plot(Ts/1e6, np.array(q_sh)/scale, label=r"SH", linestyle='solid',
         color='blue')
-ax.plot(Ts/1e6, np.array(q_snb)/scale, label=rf"SNB", linestyle='dashed',
+ax.plot(Ts/1e6, np.array(q_snb)/scale, label=r"SNB", linestyle='dashed',
         color='green')
 ax.plot(Ts/1e6, np.array(q_fl)/scale,
         label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
