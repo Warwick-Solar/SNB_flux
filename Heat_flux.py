@@ -196,9 +196,8 @@ ax.plot(Ts/1e6, np.array(q_fl)/scale,
         label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
         linestyle='dashed', color='red')
 
-label = r"$Max\left(Q\right)//Q_0$"
 ax.set_xlabel('T, MK', fontsize=16)
-ax.set_ylabel(label, fontsize=16)
+ax.set_ylabel(r"$Max\left(Q\right)//Q_0$", fontsize=16)
 ax.set_yscale('log')
 ax.tick_params(axis='both', which='major', labelsize=14)
 ax.legend(loc='center right', bbox_to_anchor=(0.99, 0.74))
@@ -208,9 +207,8 @@ ax = ax.twinx()
 scale = q_sh
 ax.plot(Ts/1e6, np.array(q_snb)/scale, linestyle='dotted', color='black')
 
-label = r"$Max\left(Q_{SNB}\right)/Max\left(Q_{SH}\right)$"
 ax.set_xlabel('T, MK', fontsize=16)
-ax.set_ylabel(label, fontsize=16)
+ax.set_ylabel(r"$Max\left(Q_{SNB}\right)/Max\left(Q_{SH}\right)$", fontsize=16)
 ax.set_yscale('log')
 ax.tick_params(axis='both', which='major', labelsize=14)
 
