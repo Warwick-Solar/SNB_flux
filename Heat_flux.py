@@ -7,9 +7,10 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-######################################################################################
-Detemine the function to calculate heat flux
-######################################################################################
+###############################################################################
+# Detemine the function to calculate heat flux
+###############################################################################
+
 
 # Thomas algorithm
 def thomas(a, b, c, d):
@@ -46,13 +47,13 @@ def snb(T0, n0):
     T0 = T0  # Kelvin
     T_max = T0 * 0.01
     T_scale = 5e6
-    Te_c = T0  + T_max * np.exp(-(x_grid_c / T_scale)**2)
-    Te_b = T0  + T_max * np.exp(-(x_grid_b / T_scale)**2)
-    
+    Te_c = T0 + T_max * np.exp(-(x_grid_c / T_scale)**2)
+    Te_b = T0 + T_max * np.exp(-(x_grid_b / T_scale)**2)
+
     # Set up energy groups for SNB
     ng = 50
     emin = 0.0
-    # Max energy group 
+    # Max energy group
     emax = 20 * T0  # Kelvin
 
     e_grid_b = np.linspace(emin, emax, ng+1)
@@ -105,7 +106,7 @@ def snb(T0, n0):
     lambda_g_c = np.zeros([Nx, ng])
 
     for i in range(ng):
-        lambda_g_b[:, i] = lambda_e_b * (e_grid_c[i] / Te_b)**2 
+        lambda_g_b[:, i] = lambda_e_b * (e_grid_c[i] / Te_b)**2
 
     lambda_g_c = 0.5 * (lambda_g_b[1:] + lambda_g_b[:-1])
 
@@ -113,9 +114,9 @@ def snb(T0, n0):
     for i in range(ng):
         a = - lambda_g_b[1:, i] / 3.0
         c = - lambda_g_b[0:-1, i] / 3.0
-        b = dx**2 / lambda_g_c[:, i]       
+        b = dx**2 / lambda_g_c[:, i]
         b = b - a - c
-        
+
         H_g = thomas(a, b, c, source_term[:, i])
         grad_H_g[1:-1, i] = (H_g[1:] - H_g[:-1]) / dx
 
@@ -125,23 +126,23 @@ def snb(T0, n0):
     Q_SNB = Q_SH_B - grad_H
 
     # FL heat flux
-    alpha = 0.0005 # flux limiter value
-    q_fs =  n_e * vt_b * kb * Te_b
+    alpha = 0.0005  # Flux limiter value
+    q_fs = n_e * vt_b * kb * Te_b
     q_fs_l = alpha * q_fs
-    Q_lim_l =  q_fs_l * Q_SH_B / np.sqrt(abs(Q_SH_B)**2 + q_fs_l**2)
+    Q_lim_l = q_fs_l * Q_SH_B / np.sqrt(abs(Q_SH_B)**2 + q_fs_l**2)
 
     return (x_grid_b / 1e6, Q_SH_B, Q_SNB, Q_lim_l, Te_b, q_fs)
-    
 
-######################################################################################
-Heat fluxes calculation
-######################################################################################
+
+###############################################################################
+# Heat fluxes calculation
+###############################################################################
 
 # Plasma temperature and number density (ions + electrons)
-T0 = 1e6 # MK
-n0 = 1e15 # 1/m^3
+T0 = 1e6  # MK
+n0 = 1e15  # 1/m^3
 
-fig, axs = plt.subplots(1, 2, figsize=(15,5))
+fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 
 # Plot heat fluxes
 ax = axs[0]
@@ -150,14 +151,17 @@ x, Q_SH_B, Q_SNB, Q_lim_l, Te, _ = snb(T0, n0)
 
 ax.plot(x, Q_SH_B, label=rf"SH", linestyle='solid', color='blue')
 ax.plot(x, Q_SNB, label=rf"SNB", linestyle='dashed', color='green')
-ax.plot(x, Q_lim_l, label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$", linestyle='dashed', color='red')
+ax.plot(x, Q_lim_l, label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
+        linestyle='dashed', color='red')
 
 # Highlight the preeating region
-x_p = x[np.abs((Q_SNB - Q_SH_B)/Q_SH_B)< 1e-2]
+x_p = x[np.abs((Q_SNB - Q_SH_B) / Q_SH_B) < 1e-2]
 x_l = x_p[0]
 x_r = x_p[-1]
-ax.fill_between(x[x<x_l], Q_SH_B[x<x_l], Q_SNB[x<x_l], alpha=0.8, color='orange')
-ax.fill_between(x[x>x_r], Q_SH_B[x>x_r], Q_SNB[x>x_r], alpha=0.8, color='orange')
+ax.fill_between(x[x < x_l], Q_SH_B[x < x_l], Q_SNB[x < x_l], alpha=0.8,
+                color='orange')
+ax.fill_between(x[x > x_r], Q_SH_B[x > x_r], Q_SNB[x > x_r], alpha=0.8,
+                color='orange')
 
 ax.set_xlabel('x, Mm', fontsize=16)
 ax.set_ylabel(r'Heat flux, $W/m^{2}$', fontsize=16)
@@ -178,7 +182,7 @@ q_fl = []
 
 Ts = np.arange(1e6, 10e6 + 1, 1e6)
 for T0 in Ts:
-    x, Q_SH_B, Q_SNB, Q_lim_l, _ ,Q_FS = snb(T0, n0)
+    x, Q_SH_B, Q_SNB, Q_lim_l, _, Q_FS = snb(T0, n0)
     q_sh.append(Q_SH_B.max())
     q_fs.append(Q_FS.max())
     q_fl.append(Q_lim_l.max())
@@ -186,23 +190,27 @@ for T0 in Ts:
 
 # We measure heat flux in units of heat flux at minimal temperature
 scale = q_sh[0]
-ax.plot(Ts/1e6, np.array(q_sh)/scale,  label=rf"SH", linestyle='solid', color='blue')
-ax.plot(Ts/1e6, np.array(q_snb)/scale,label=rf"SNB", linestyle='dashed', color='green')
-ax.plot(Ts/1e6, np.array(q_fl)/scale, label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$", linestyle='dashed', color='red')
+ax.plot(Ts/1e6, np.array(q_sh)/scale, label=rf"SH", linestyle='solid',
+        color='blue')
+ax.plot(Ts/1e6, np.array(q_snb)/scale, label=rf"SNB", linestyle='dashed',
+        color='green')
+ax.plot(Ts/1e6, np.array(q_fl)/scale,
+        label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
+        linestyle='dashed', color='red')
 
-label=r"$Max\left(Q\right)//Q_0$"
+label = r"$Max\left(Q\right)//Q_0$"
 ax.set_xlabel('T, MK', fontsize=16)
 ax.set_ylabel(label, fontsize=16)
 ax.set_yscale('log')
 ax.tick_params(axis='both', which='major', labelsize=14)
-ax.legend(loc='center right', bbox_to_anchor=(0.99,0.74))
+ax.legend(loc='center right', bbox_to_anchor=(0.99, 0.74))
 
 # Plot relation between SNB and SH fluxes
 ax = ax.twinx()
 scale = q_sh
 ax.plot(Ts/1e6, np.array(q_snb)/scale, linestyle='dotted', color='black')
 
-label=r"$Max\left(Q_{SNB}\right)/Max\left(Q_{SH}\right)$"
+label = r"$Max\left(Q_{SNB}\right)/Max\left(Q_{SH}\right)$"
 ax.set_xlabel('T, MK', fontsize=16)
 ax.set_ylabel(label, fontsize=16)
 ax.set_yscale('log')
