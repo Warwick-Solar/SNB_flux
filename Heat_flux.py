@@ -138,7 +138,7 @@ def snb(T0, n0):
 # T0 specified in Kelvin
 # n0 is total (ion + electron) number density, specified in 1/m^3
 ###############################################################################
-def plot_heat_flux(T0=1e6, n0=1e15):
+def plot_heat_flux(T0=1e6, n0=1e15, save=True):
 
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 
@@ -213,8 +213,8 @@ def plot_heat_flux(T0=1e6, n0=1e15):
     ax.tick_params(axis='both', which='major', labelsize=14)
 
     fig.tight_layout()
-
-    fig.savefig('./fluxes.pdf')
+    if save:
+        fig.savefig('./fluxes.pdf')
 
 
 if __name__ == '__main__':
