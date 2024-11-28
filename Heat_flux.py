@@ -179,8 +179,8 @@ def plot_heat_flux(T0=1e6, n0=1e15, save=True):
     q_fl = []
 
     Ts = np.arange(1e6, 10e6 + 1, 1e6)
-    for T0 in Ts:
-        x, Q_SH_B, Q_SNB, Q_lim_l, _, Q_FS = snb(T0, n0)
+    for _T0 in Ts:
+        x, Q_SH_B, Q_SNB, Q_lim_l, _, Q_FS = snb(_T0, n0)
         q_sh.append(Q_SH_B.max())
         q_fs.append(Q_FS.max())
         q_fl.append(Q_lim_l.max())
