@@ -134,84 +134,88 @@ def snb(T0, n0):
 
 ###############################################################################
 # Heat fluxes calculation
+#
+# T0 specified in Kelvin
+# n0 is total (ion + electron) number density, specified in 1/m^3
 ###############################################################################
+def plot_heat_flux(T0=1e6, n0=1e15):
 
-# Plasma temperature and number density (ions + electrons)
-T0 = 1e6  # MK
-n0 = 1e15  # 1/m^3
+    fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 
-fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+    # Plot heat fluxes
+    ax = axs[0]
 
-# Plot heat fluxes
-ax = axs[0]
+    x, Q_SH_B, Q_SNB, Q_lim_l, Te, _ = snb(T0, n0)
 
-x, Q_SH_B, Q_SNB, Q_lim_l, Te, _ = snb(T0, n0)
+    ax.plot(x, Q_SH_B, label=r"SH", linestyle='solid', color='blue')
+    ax.plot(x, Q_SNB, label=r"SNB", linestyle='dashed', color='green')
+    ax.plot(x, Q_lim_l, label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
+            linestyle='dashed', color='red')
 
-ax.plot(x, Q_SH_B, label=r"SH", linestyle='solid', color='blue')
-ax.plot(x, Q_SNB, label=r"SNB", linestyle='dashed', color='green')
-ax.plot(x, Q_lim_l, label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
-        linestyle='dashed', color='red')
+    # Highlight the preeating region
+    x_p = x[np.abs((Q_SNB - Q_SH_B) / Q_SH_B) < 1e-2]
+    x_l = x_p[0]
+    x_r = x_p[-1]
+    ax.fill_between(x[x < x_l], Q_SH_B[x < x_l], Q_SNB[x < x_l], alpha=0.8,
+                    color='orange')
+    ax.fill_between(x[x > x_r], Q_SH_B[x > x_r], Q_SNB[x > x_r], alpha=0.8,
+                    color='orange')
 
-# Highlight the preeating region
-x_p = x[np.abs((Q_SNB - Q_SH_B) / Q_SH_B) < 1e-2]
-x_l = x_p[0]
-x_r = x_p[-1]
-ax.fill_between(x[x < x_l], Q_SH_B[x < x_l], Q_SNB[x < x_l], alpha=0.8,
-                color='orange')
-ax.fill_between(x[x > x_r], Q_SH_B[x > x_r], Q_SNB[x > x_r], alpha=0.8,
-                color='orange')
+    ax.set_xlabel('x, Mm', fontsize=16)
+    ax.set_ylabel(r'Heat flux, $W/m^{2}$', fontsize=16)
+    ax.tick_params(axis='both', which='major', labelsize=14)
 
-ax.set_xlabel('x, Mm', fontsize=16)
-ax.set_ylabel(r'Heat flux, $W/m^{2}$', fontsize=16)
-ax.tick_params(axis='both', which='major', labelsize=14)
+    # Plot temperature perturbation
+    ax = ax.twinx()
+    ax.plot(x, Te/1e6, linestyle='dotted', color='black')
+    ax.set_ylabel(r'Temperature, MK', fontsize=16)
+    ax.tick_params(axis='both', which='major', labelsize=14)
 
-# Plot temperature perturbation
-ax = ax.twinx()
-ax.plot(x, Te/1e6, linestyle='dotted', color='black')
-ax.set_ylabel(r'Temperature, MK', fontsize=16)
-ax.tick_params(axis='both', which='major', labelsize=14)
+    # Plot dependence of maximum heat flux on temperture
+    ax = axs[1]
+    q_sh = []
+    q_fs = []
+    q_snb = []
+    q_fl = []
 
-# Plot dependence of maximum heat flux on temperture
-ax = axs[1]
-q_sh = []
-q_fs = []
-q_snb = []
-q_fl = []
+    Ts = np.arange(1e6, 10e6 + 1, 1e6)
+    for T0 in Ts:
+        x, Q_SH_B, Q_SNB, Q_lim_l, _, Q_FS = snb(T0, n0)
+        q_sh.append(Q_SH_B.max())
+        q_fs.append(Q_FS.max())
+        q_fl.append(Q_lim_l.max())
+        q_snb.append(Q_SNB.max())
 
-Ts = np.arange(1e6, 10e6 + 1, 1e6)
-for T0 in Ts:
-    x, Q_SH_B, Q_SNB, Q_lim_l, _, Q_FS = snb(T0, n0)
-    q_sh.append(Q_SH_B.max())
-    q_fs.append(Q_FS.max())
-    q_fl.append(Q_lim_l.max())
-    q_snb.append(Q_SNB.max())
+    # We measure heat flux in units of heat flux at minimal temperature
+    scale = q_sh[0]
+    ax.plot(Ts/1e6, np.array(q_sh)/scale, label=r"SH", linestyle='solid',
+            color='blue')
+    ax.plot(Ts/1e6, np.array(q_snb)/scale, label=r"SNB", linestyle='dashed',
+            color='green')
+    ax.plot(Ts/1e6, np.array(q_fl)/scale,
+            label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
+            linestyle='dashed', color='red')
 
-# We measure heat flux in units of heat flux at minimal temperature
-scale = q_sh[0]
-ax.plot(Ts/1e6, np.array(q_sh)/scale, label=r"SH", linestyle='solid',
-        color='blue')
-ax.plot(Ts/1e6, np.array(q_snb)/scale, label=r"SNB", linestyle='dashed',
-        color='green')
-ax.plot(Ts/1e6, np.array(q_fl)/scale,
-        label=r"FL $\left(\alpha=5\cdot10^{-4}\right)$",
-        linestyle='dashed', color='red')
+    ax.set_xlabel('T, MK', fontsize=16)
+    ax.set_ylabel(r"$Max\left(Q\right)//Q_0$", fontsize=16)
+    ax.set_yscale('log')
+    ax.tick_params(axis='both', which='major', labelsize=14)
+    ax.legend(loc='center right', bbox_to_anchor=(0.99, 0.74))
 
-ax.set_xlabel('T, MK', fontsize=16)
-ax.set_ylabel(r"$Max\left(Q\right)//Q_0$", fontsize=16)
-ax.set_yscale('log')
-ax.tick_params(axis='both', which='major', labelsize=14)
-ax.legend(loc='center right', bbox_to_anchor=(0.99, 0.74))
+    # Plot relation between SNB and SH fluxes
+    ax = ax.twinx()
+    scale = q_sh
+    ax.plot(Ts/1e6, np.array(q_snb)/scale, linestyle='dotted', color='black')
 
-# Plot relation between SNB and SH fluxes
-ax = ax.twinx()
-scale = q_sh
-ax.plot(Ts/1e6, np.array(q_snb)/scale, linestyle='dotted', color='black')
+    ax.set_xlabel('T, MK', fontsize=16)
+    ax.set_ylabel(r"$Max\left(Q_{SNB}\right)/Max\left(Q_{SH}\right)$", fontsize=16)
+    ax.set_yscale('log')
+    ax.tick_params(axis='both', which='major', labelsize=14)
 
-ax.set_xlabel('T, MK', fontsize=16)
-ax.set_ylabel(r"$Max\left(Q_{SNB}\right)/Max\left(Q_{SH}\right)$", fontsize=16)
-ax.set_yscale('log')
-ax.tick_params(axis='both', which='major', labelsize=14)
+    fig.tight_layout()
 
-fig.tight_layout()
+    fig.savefig('./fluxes.pdf')
 
-fig.savefig('./fluxes.pdf')
+
+if __name__ == '__main__':
+    plot_heat_flux()
