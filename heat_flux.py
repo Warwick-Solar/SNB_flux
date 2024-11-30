@@ -104,8 +104,9 @@ def snb(T0, n0, zbar=1.0, coulomb_log=18.55):
     b = np.zeros(Nx)
     c = np.zeros(Nx)
 
-    # Simple mfp from (Arber et al. 2023)
-    lambda_e_b = 5.5e7 * Te_b**2 / n_e
+
+    lambda_e_b = 12.0 * np.pi**1.5 * ep0**2 * kb**2 * Te_b**2 / (
+        n_e * np.sqrt(2.0) * qe**4 * zbar * coulomb_log)
 
     lambda_g_b = np.zeros([Nx+1, ng])
     lambda_g_c = np.zeros([Nx, ng])
