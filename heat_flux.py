@@ -1,8 +1,8 @@
 import warnings
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.constants import Boltzmann as kb
-from scipy.constants import electron_mass as me
+from scipy.constants import Boltzmann as kb, epsilon_0 as ep0
+from scipy.constants import electron_mass as me, elementary_charge as qe
 warnings.filterwarnings('ignore')
 
 
@@ -29,7 +29,12 @@ def thomas(a, b, c, d):
     return x
 
 
-def snb(T0, n0):
+def gammaz(zbar):
+    """Approximate form of zbar dependance of local SH flux"""
+    return 13.6 * (zbar + 0.44) / (zbar + 4.24)
+
+
+def snb(T0, n0, zbar=1.0, coulomb_log=18.55):
     # Plasma parameters
     n_e = 0.5 * n0
 
@@ -59,8 +64,10 @@ def snb(T0, n0):
 
     # Calculate thermal speed and Spitzer Harm conductivity
     vt_b = np.sqrt(2 * kb * Te_b / me)
-    # Common solar SH approximation
-    kappa_SH_b = 1.e-11 * Te_b**2.5
+
+    # Calculate local flux
+    kappa0 = 12.0 * np.pi**1.5 * ep0**2 * kb**3.5 / (qe**4 * np.sqrt(2.0 * me))
+    kappa_SH_b = Te_b**2.5 * kappa0 * gammaz(zbar) / coulomb_log / zbar
 
     # Zero flux at boundaries
     grad_T_b = np.concatenate(
@@ -97,8 +104,9 @@ def snb(T0, n0):
     b = np.zeros(Nx)
     c = np.zeros(Nx)
 
-    # Simple mfp from (Arber et al. 2023)
-    lambda_e_b = 5.5e7 * Te_b**2 / n_e
+
+    lambda_e_b = 12.0 * np.pi**1.5 * ep0**2 * kb**2 * Te_b**2 / (
+        n_e * np.sqrt(2.0) * qe**4 * zbar * coulomb_log)
 
     lambda_g_b = np.zeros([Nx+1, ng])
     lambda_g_c = np.zeros([Nx, ng])
@@ -137,15 +145,18 @@ def snb(T0, n0):
 #
 # T0 specified in Kelvin
 # n0 is total (ion + electron) number density, specified in 1/m^3
+# Default parameters of zbar=1.0, coulomb_log=18.55 correspond to local flux
+# of approx 1e-11 T^5/2.
 ###############################################################################
-def plot_heat_flux(T0=1e6, n0=1e15, save=True):
+def plot_heat_flux(T0=1e6, n0=1e15, save=True, zbar=1.0, coulomb_log=18.55):
 
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 
     # Plot heat fluxes
     ax = axs[0]
 
-    x, Q_SH_B, Q_SNB, Q_lim_l, Te, _ = snb(T0, n0)
+    x, Q_SH_B, Q_SNB, Q_lim_l, Te, _ = snb(T0, n0, zbar=zbar,
+                                           coulomb_log=coulomb_log)
 
     ax.plot(x, Q_SH_B, label=r"SH", linestyle='solid', color='blue')
     ax.plot(x, Q_SNB, label=r"SNB", linestyle='dashed', color='green')
