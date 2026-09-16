@@ -36,7 +36,7 @@ def gammaz(zbar):
 
 def snb(T0, n0, zbar=1.0, coulomb_log=18.55):
     # Plasma parameters
-    n_e = 0.5 * n0
+    n_e = n0 / (1.0 + zbar)
 
     # Set up grid
     Nx = 100
