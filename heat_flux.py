@@ -191,7 +191,8 @@ def plot_heat_flux(T0=1e6, n0=1e15, save=True, zbar=1.0, coulomb_log=18.55):
 
     Ts = np.arange(1e6, 10e6 + 1, 1e6)
     for _T0 in Ts:
-        x, Q_SH_B, Q_SNB, Q_lim_l, _, Q_FS = snb(_T0, n0)
+        x, Q_SH_B, Q_SNB, Q_lim_l, _, Q_FS = snb(_T0, n0, zbar=zbar,
+                                                 coulomb_log=coulomb_log)
         q_sh.append(Q_SH_B.max())
         q_fs.append(Q_FS.max())
         q_fl.append(Q_lim_l.max())
